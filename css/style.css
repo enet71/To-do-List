@@ -1,0 +1,41 @@
+.delete {
+    position: absolute;
+    right: 10px;
+    background-color: #f66b6b;
+}
+
+.delete:hover {
+    background: #ff7e7b;
+}
+
+.done {
+    background-color: #f5f3f3 !important;
+    color: #d5d5d5;
+}
+
+.date {
+    position: absolute;
+    right: 150px;
+    color: #666666;
+}
+
+.item-style {
+    transition: border 1s;
+}
+
+.text {
+    width: 99%;
+    padding-right: 250px;
+    word-wrap: break-word;
+}
+
+.nothingText{
+    text-align: center;
+    color: #757575;
+}
+
+.move{
+    color: #666666;
+    margin-right: 10px;
+    cursor: pointer;
+}

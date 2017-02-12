@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+    <title>Starter Template - Materialize</title>
+    <!-- CSS  -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="css/style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<div class="section no-pad-bot" id="index-banner">
+    <div class="container">
+        <div class="row valign-wrapper center">
+            <div class="input-field col s11" style="padding-left: 0;">
+                <input id="doInput" type="text" class="validate">
+                <label id="label" for="doInput">Enter the text</label>
+            </div>
+            <div class="col s1" style="padding: 0;">
+                <a id="addButton" class="waves-effect waves-light btn" style="width: 100%;">+</a>
+            </div>
+        </div>
+
+        <h5>Do</h5>
+        <div id="nothingDo" class="nothingText">Nothing to do</div>
+        <div class="row">
+            <div id="do" class="collection">
+
+            </div>
+        </div>
+
+        <h5>Done</h5>
+        <div id="nothingDone" class="nothingText">Nothing has been done</div>
+        <div class="row">
+            <div id="done" class="collection">
+
+            </div>
+        </div>
+    </div>
+</div>
+<!--  Scripts-->
+<script>
+    var doContainer = document.querySelector("#do");
+    var doneContainer = document.querySelector("#done");
+    var addButton = document.querySelector("#addButton");
+    var doInput = document.querySelector("#doInput");
+    var label = document.querySelector("#label");
+
+    addButton.addEventListener("click", function () {
+        var element = getClearElement();
+        var index = doContainer.querySelectorAll(".collection-item").length + doneContainer.querySelectorAll(".collection-item").length;
+        element.innerHTML = getContent(doInput.value, index);
+        doContainer.appendChild(element);
+        doInput.value = "";
+        label.classList.remove("active");
+        checkNothing()
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!e.target.classList.contains("delete")) {
+            return;
+        }
+        e.target.parentNode.parentNode.removeChild(e.target.parentNode);
+        checkNothing()
+    });
+
+    document.addEventListener("click", function (e) {
+        if (e.target.type != "checkbox") {
+            return;
+        }
+        var parent = e.target.parentNode;
+        if (e.target.checked) {
+            doneContainer.insertBefore(parent, doneContainer.childNodes[0]);
+            parent.classList.add("done");
+        } else {
+            doContainer.appendChild(parent);
+            parent.classList.remove("done");
+        }
+        checkNothing()
+    });
+
+    function getContent(text, index) {
+        var date = new Date();
+        var day = date.getDate();
+        var month = date.getMonth() + 1;
+
+        if (day < 10) {
+            day = "0" + day;
+        }
+        if (month < 10) {
+            month = "0" + month;
+        }
+        return '<i class="fa fa-arrows-v move" aria-hidden="true"></i><input type="checkbox" id="myCheckbox' + index + '" class="filled-in"/>' +
+                '<label for="myCheckbox' + index + '" style="top:2px"></label>' +
+                '<span class="text">' + text + '</span>' +
+                '<span class="date">' + day + '.' + month + '.' + date.getFullYear() + '</span>' +
+                '<a class="waves-effect waves-light btn delete">Delete</a>';
+    }
+
+    function getClearElement() {
+        var element = document.createElement("div");
+        element.classList.add("collection-item");
+        element.classList.add("valign-wrapper");
+        element.classList.add("item-style");
+        return element;
+    }
+
+    function checkNothing() {
+        var nothingDo = document.querySelector("#nothingDo");
+        var nothingDone = document.querySelector("#nothingDone");
+
+        nothingDo.hidden = doContainer.childNodes.length > 1;
+        nothingDone.hidden = doneContainer.childNodes.length > 1;
+    }
+
+    /**Drag Object*/
+    var clearElement = getClearElement();
+    document.addEventListener("mousedown", function (e) {
+        if (e.which != 1) {
+            return;
+        }
+
+        if (!e.target.classList.contains("move")) {
+            return;
+        }
+
+        var dragObject = e.target.parentNode;
+        var parent = e.target.closest(".collection");
+        var coordsParent = parent.getBoundingClientRect();
+        var coordsObject = dragObject.getBoundingClientRect();
+        var shiftY = e.pageY - coordsObject.top;
+        var shiftYScroll = e.clientY - coordsObject.top;
+        var shiftElement;
+        clearElement.style.height = dragObject.offsetHeight + "px";
+
+
+        document.onmousemove = function (e) {
+            var coordsParentNew = parent.getBoundingClientRect();
+            var coordsObjectNew = dragObject.getBoundingClientRect();
+
+            dragObject.style.position = "absolute";
+            dragObject.style.width = "100%";
+            dragObject.style.zIndex = "99999";
+            dragObject.style.opacity = "0.8";
+
+            if (e.clientY + shiftYScroll > coordsParentNew.bottom) {
+                dragObject.style.top = coordsParentNew.bottom - coordsParentNew.top - dragObject.offsetHeight + "px";
+                shiftElement = parent.childNodes[parent.childNodes.length];
+                parent.appendChild(clearElement);
+            } else if (e.pageY - shiftY < coordsParentNew.top) {
+                dragObject.style.top = 0;
+                shiftElement = parent.childNodes[0];
+                parent.insertBefore(clearElement, shiftElement);
+            } else {
+                dragObject.style.top = e.pageY - coordsParent.top - shiftY + "px";
+                shiftElement = document.elementFromPoint(coordsObjectNew.left + 50, coordsObjectNew.bottom + 5);
+                if (shiftElement) {
+                    shiftElement = shiftElement.closest(".collection-item");
+                }
+                if (shiftElement != dragObject) {
+                    parent.insertBefore(clearElement, shiftElement);
+                }
+            }
+
+            document.onmouseup = function (e) {
+                dragObject.style.position = "";
+                dragObject.style.top = "";
+                dragObject.style.width = "";
+                dragObject.style.zIndex = "";
+                dragObject.style.opacity = "";
+
+                parent.insertBefore(dragObject, shiftElement);
+                parent.removeChild(clearElement);
+                document.onmousemove = null;
+                document.onmouseup = null;
+            };
+            return false;
+        };
+    });
+</script>
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script src="js/materialize.js"></script>
+<script src="js/init.js"></script>
+</body>
+</html>
