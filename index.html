@@ -49,10 +49,8 @@
     var label = document.querySelector("#label");
 
     addButton.addEventListener("click", function () {
-        var element = getClearElement();
-        var index = doContainer.querySelectorAll(".collection-item").length + doneContainer.querySelectorAll(".collection-item").length;
-        element.innerHTML = getContent(doInput.value, index);
-        doContainer.appendChild(element);
+        var element = new Element(doInput.value);
+        doContainer.appendChild(element.contentElement);
         doInput.value = "";
         label.classList.remove("active");
         checkNothing()
@@ -70,6 +68,7 @@
         if (e.target.type != "checkbox") {
             return;
         }
+
         var parent = e.target.parentNode;
         if (e.target.checked) {
             doneContainer.insertBefore(parent, doneContainer.childNodes[0]);
@@ -81,30 +80,57 @@
         checkNothing()
     });
 
-    function getContent(text, index) {
-        var date = new Date();
-        var day = date.getDate();
-        var month = date.getMonth() + 1;
 
-        if (day < 10) {
-            day = "0" + day;
-        }
-        if (month < 10) {
-            month = "0" + month;
-        }
-        return '<i class="fa fa-arrows-v move" aria-hidden="true"></i><input type="checkbox" id="myCheckbox' + index + '" class="filled-in"/>' +
-                '<label for="myCheckbox' + index + '" style="top:2px"></label>' +
-                '<span class="text">' + text + '</span>' +
-                '<span class="date">' + day + '.' + month + '.' + date.getFullYear() + '</span>' +
-                '<a class="waves-effect waves-light btn delete">Delete</a>';
+    function counter() {
+        var n = 0;
+
+        var value = function () {
+            return n;
+        };
+
+        value.nextValue = function () {
+            return n++;
+        };
+
+        return value;
     }
+    var index = counter();
 
-    function getClearElement() {
-        var element = document.createElement("div");
-        element.classList.add("collection-item");
-        element.classList.add("valign-wrapper");
-        element.classList.add("item-style");
-        return element;
+    class Element {
+        constructor(text) {
+            this.text = text;
+        }
+
+        get contentElement() {
+            var date = new Date();
+            var day = date.getDate();
+            var month = date.getMonth() + 1;
+
+            if (day < 10) {
+                day = "0" + day;
+            }
+            if (month < 10) {
+                month = "0" + month;
+            }
+
+            var text = '<i class="fa fa-arrows-v move" aria-hidden="true"></i><input type="checkbox" id="myCheckbox' + index() + '" class="filled-in"/>' +
+                    '<label for="myCheckbox' + index.nextValue() + '" style="top:2px"></label>' +
+                    '<span class="text">' + this.text + '</span>' +
+                    '<span class="date">' + day + '.' + month + '.' + date.getFullYear() + '</span>' +
+                    '<a class="waves-effect waves-light btn delete">Delete</a>';
+            var element = Element.clearElement;
+            element.innerHTML = text;
+
+            return element;
+        }
+
+        static get clearElement() {
+            var element = document.createElement("div");
+            element.classList.add("collection-item");
+            element.classList.add("valign-wrapper");
+            element.classList.add("item-style");
+            return element;
+        }
     }
 
     function checkNothing() {
@@ -116,7 +142,7 @@
     }
 
     /**Drag Object*/
-    var clearElement = getClearElement();
+    var clearElement = Element.clearElement;
     document.addEventListener("mousedown", function (e) {
         if (e.which != 1) {
             return;
@@ -133,17 +159,13 @@
         var shiftY = e.pageY - coordsObject.top;
         var shiftYScroll = e.clientY - coordsObject.top;
         var shiftElement;
+
         clearElement.style.height = dragObject.offsetHeight + "px";
-
-
         document.onmousemove = function (e) {
             var coordsParentNew = parent.getBoundingClientRect();
             var coordsObjectNew = dragObject.getBoundingClientRect();
 
-            dragObject.style.position = "absolute";
-            dragObject.style.width = "100%";
-            dragObject.style.zIndex = "99999";
-            dragObject.style.opacity = "0.8";
+            setDragStyles(dragObject, "absolute", "100%", "99999", "0.8");
 
             if (e.clientY + shiftYScroll > coordsParentNew.bottom) {
                 dragObject.style.top = coordsParentNew.bottom - coordsParentNew.top - dragObject.offsetHeight + "px";
@@ -164,18 +186,21 @@
                 }
             }
 
-            document.onmouseup = function (e) {
-                dragObject.style.position = "";
-                dragObject.style.top = "";
-                dragObject.style.width = "";
-                dragObject.style.zIndex = "";
-                dragObject.style.opacity = "";
-
+            document.onmouseup = function () {
+                setDragStyles(dragObject);
                 parent.insertBefore(dragObject, shiftElement);
                 parent.removeChild(clearElement);
                 document.onmousemove = null;
                 document.onmouseup = null;
             };
+
+            function setDragStyles(object, position, width, zIndex, opacity) {
+                object.style.position = position || "";
+                object.style.width = width || "";
+                object.style.zIndex = zIndex || "";
+                object.style.opacity = opacity || "";
+            }
+
             return false;
         };
     });
