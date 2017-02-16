@@ -107,8 +107,8 @@ class ToDoList {
                     setDragStyles(dragObject);
                     parent.insertBefore(dragObject, shiftElement);
                     parent.removeChild(clearElement);
-                    document.onmousemove = null;
-                    document.onmouseup = null;
+                    // document.onmousemove = null;
+                    // document.onmouseup = null;
                 };
 
                 function setDragStyles(object, position, width, zIndex, opacity) {
@@ -118,7 +118,7 @@ class ToDoList {
                     object.style.opacity = opacity || "";
                 }
 
-                return false;
+                // return false;
             };
         });
     }
